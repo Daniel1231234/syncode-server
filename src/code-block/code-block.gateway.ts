@@ -2,6 +2,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Server, Socket } from 'socket.io';
+import { Logger } from '@nestjs/common';
 import {
     WebSocketGateway,
     WebSocketServer,
@@ -17,44 +18,42 @@ import { CodeBlockService } from './code-block.service';
 })
 
 @Injectable()
-export class CodeBlockGateway implements  OnGatewayConnection, OnGatewayDisconnect {
+export class CodeBlockGateway implements OnGatewayConnection, OnGatewayDisconnect {
     constructor(@InjectModel('codeblocks') private codeBlockService: CodeBlockService) { }
 
     @WebSocketServer()
-    server: Server
+    server = new Server
     joindUsers = 0
-    currBlock:string
+    currBlock: string
     currentTypingCode: string;
-    isMentor:Socket
+    isMentor: null | Socket
+     private logger = new Logger('codeBlockGateway');
 
 
-     handleConnection(client: Socket) {
+    handleConnection(client: Socket) {
         console.log(`user connected ${client.id}`)
-        // this.logger.log(`user connected ${client.id}`)
+        this.logger.log(`user connected ${client.id}`)
     }
 
-     handleDisconnect(client: Socket) {
+    handleDisconnect(client: Socket) {
         console.log(`user disconnected ${client.id}`);
     }
 
     @SubscribeMessage('join_room')
-    async handleRoomJoin(client: Socket, blockTitle:any) {
+    async handleRoomJoin(client: Socket, blockTitle: any) {
         try {
-            // console.log(this.joindUsers)
             if (this.joindUsers >= 2 && this.joindUsers < 0) return
             this.joindUsers++
             console.log(this.joindUsers, ' join room')
             this.currBlock = blockTitle
             client.join(this.currBlock)
-            // if this is the first user, set the firstUser variable
             if (!this.isMentor) this.isMentor = client
 
-            console.log(this.isMentor)
             client.emit('joined_users', {
                 joinedUsers: this.joindUsers,
             })
 
-            client.to(this.currBlock).emit('joined_users', {
+            this.server.to(this.currBlock).emit('joined_users', {
                 joinedUsers: this.joindUsers
             })
 
@@ -63,42 +62,42 @@ export class CodeBlockGateway implements  OnGatewayConnection, OnGatewayDisconne
         }
     }
 
+
+
+
+    
+
+
     @SubscribeMessage('update_code')
     handleUpdateCode(client: Socket, code: string) {
-        
         try {
             if (client === this.isMentor) return
             this.currentTypingCode = code
             client.emit('code_updated', code)
-            // client.to(this.currBlock).emit('code_updated', code)
             this.server.to(this.currBlock).emit('code_updated', code)
         } catch (err) {
             console.log(`${err} in update code event`)
         }
-        }
+    }
 
-    
+
 
     @SubscribeMessage('leave_room')
-    async handleLeaveRoom(client: Socket, blockTitle:any) {
+    async handleLeaveRoom(client: Socket, blockTitle: any) {
         try {
             // if (blockTitle !== this.currBlock) return
-            if (this.joindUsers  === 2) {
+            if (this.joindUsers === 2) {
                 this.joindUsers = 1
             } else if (this.joindUsers === 1) {
                 this.joindUsers = 0
-            }
+            } 
             console.log(this.joindUsers, ' leave room')
             if (client === this.isMentor) this.isMentor = null
-            
-            // client.emit('joined_users', {
-            //     joinedUsers: this.joindUsers
-            // })
-            
+
             client.to(blockTitle).emit('joined_users', {
                 joinedUsers: this.joindUsers
             })
-            
+
             client.leave(this.currBlock)
             this.currBlock = ""
         } catch (err) {
