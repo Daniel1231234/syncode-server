@@ -10,6 +10,7 @@ export class SocketAdapter extends IoAdapter {
   createIOServer(
     port: number,
     options?: ServerOptions & {
+      namespace?: string;
       server?: any;
     },
   ) {
@@ -35,7 +36,5 @@ async function bootstrap() {
     
   await app.listen(port);
   console.log(`Application is running on: ${await app.getUrl()}`);
-
-  app.enableShutdownHooks();
 }
 bootstrap()

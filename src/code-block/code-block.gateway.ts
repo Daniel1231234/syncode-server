@@ -14,6 +14,7 @@ import { CodeBlockService } from './code-block.service';
 // import { CodeBlockDocument } from './code-block.schema';
 
 @WebSocketGateway({
+    namespace: '/codeblock',
     cors: '*',
 })
 
