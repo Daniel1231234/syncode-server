@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import { Controller, Get, Param } from '@nestjs/common';
 import { CodeBlock } from './code-block.schema';
 import { CodeBlockService } from './code-block.service';
@@ -10,7 +9,6 @@ export class CodeBlockController {
   @Get('/')
   async getBlocks(): Promise<CodeBlock[]> {
     const blocks = await this.codeBlockService.getAllBlocks();
-      // console.log(blocks)
       return blocks
   }
 

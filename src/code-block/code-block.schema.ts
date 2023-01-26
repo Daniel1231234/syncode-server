@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import * as mongoose from 'mongoose'
@@ -21,6 +20,10 @@ export class CodeBlock {
 
   @Prop()
   solution: string;
+
+  @Prop()
+  users?: string[];
+
 
 }
 

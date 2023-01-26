@@ -1,6 +1,5 @@
-/* eslint-disable prettier/prettier */
+import { CodeBlockService } from './code-block.service';
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
 import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
 import {
@@ -10,8 +9,6 @@ import {
     OnGatewayDisconnect,
     SubscribeMessage,
 } from '@nestjs/websockets';
-import { CodeBlockService } from './code-block.service';
-// import { CodeBlockDocument } from './code-block.schema';
 
 @WebSocketGateway({
     namespace: '/codeblock',
@@ -20,89 +17,65 @@ import { CodeBlockService } from './code-block.service';
 
 @Injectable()
 export class CodeBlockGateway implements OnGatewayConnection, OnGatewayDisconnect {
-    constructor(@InjectModel('codeblocks') private codeBlockService: CodeBlockService) { }
+    constructor(private codeBlockService: CodeBlockService) { }
 
     @WebSocketServer()
-    server = new Server
+    server: Server
     joindUsers = 0
     currBlock: string
     currentTypingCode: string;
     isMentor: null | Socket
-     private logger = new Logger('codeBlockGateway');
+    rooms:[]
+    private logger = new Logger('codeBlockGateway');
 
 
-    handleConnection(client: Socket) {
-        console.log(`user connected ${client.id}`)
+   async handleConnection(client: Socket) {
         this.logger.log(`user connected ${client.id}`)
     }
 
-    handleDisconnect(client: Socket) {
-        console.log(`user disconnected ${client.id}`);
+    async handleDisconnect(client: Socket) {
+       this.logger.log(`user disconnected ${client.id}`);
     }
 
     @SubscribeMessage('join_room')
-    async handleRoomJoin(client: Socket, blockTitle: any) {
+    async handleRoomJoin(client: Socket, blockTitle: string) {
         try {
-            if (this.joindUsers >= 2 && this.joindUsers < 0) return
-            this.joindUsers++
-            console.log(this.joindUsers, ' join room')
-            this.currBlock = blockTitle
-            client.join(this.currBlock)
-            if (!this.isMentor) this.isMentor = client
+            const room = await this.codeBlockService.addUserToRoom(blockTitle, client.id)
+            client.join(room.title)
 
-            client.emit('joined_users', {
-                joinedUsers: this.joindUsers,
-            })
-
-            this.server.to(this.currBlock).emit('joined_users', {
-                joinedUsers: this.joindUsers
-            })
+            client.emit('joined_users', room.users)
+            this.server.to(room.title).emit('joined_users', room.users)
 
         } catch (err) {
-            console.log(err)
+            this.logger.error(`${err} in handleRoomJoin`)
+            throw err
         }
     }
-
-
-
-
-    
-
 
     @SubscribeMessage('update_code')
-    handleUpdateCode(client: Socket, code: string) {
+    handleUpdateCode(client: Socket, data:any) {
         try {
-            if (client === this.isMentor) return
-            this.currentTypingCode = code
-            client.emit('code_updated', code)
-            this.server.to(this.currBlock).emit('code_updated', code)
+            const {updatedCode, currBlock} = data
+            this.currentTypingCode = updatedCode
+            client.emit('code_updated', updatedCode)
+            this.server.to(currBlock.title).emit('code_updated', updatedCode)
         } catch (err) {
-            console.log(`${err} in update code event`)
+            this.logger.error(`${err} in handleUpdateCode`)
+            throw err
         }
     }
-
 
 
     @SubscribeMessage('leave_room')
     async handleLeaveRoom(client: Socket, blockTitle: any) {
         try {
-            // if (blockTitle !== this.currBlock) return
-            if (this.joindUsers === 2) {
-                this.joindUsers = 1
-            } else if (this.joindUsers === 1) {
-                this.joindUsers = 0
-            } 
-            console.log(this.joindUsers, ' leave room')
-            if (client === this.isMentor) this.isMentor = null
-
-            client.to(blockTitle).emit('joined_users', {
-                joinedUsers: this.joindUsers
-            })
-
-            client.leave(this.currBlock)
-            this.currBlock = ""
+            const room = await this.codeBlockService.removeUserFromRoom(blockTitle, client.id)
+            client.emit('joined_users', room.users)
+            this.server.emit('joined_users', room.users)
+            client.leave(room.title)
         } catch (err) {
-            console.log(err)
+            this.logger.error(`${err} in handleLeaveRoom`)
+            throw err
         }
     }
 
