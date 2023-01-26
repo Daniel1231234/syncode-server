@@ -21,7 +21,7 @@ export class CodeBlockService {
   async addUserToRoom(blockTitle: string, socketId: string): Promise<any> {
     const block = await this.codeBlockModel.findOne({ title: blockTitle });
     if (!block) {
-        throw new Error(`Block with title ${blockTitle} not found`);
+      throw new Error(`Block with title ${blockTitle} not found`);
     }
     if (block.users.indexOf(socketId) !== -1) {
       throw new Error(`user ${blockTitle} is allready in room`);
@@ -34,7 +34,7 @@ export class CodeBlockService {
   async removeUserFromRoom(blockTitle: string, socketId: string): Promise<any> {
     const block = await this.codeBlockModel.findOne({ title: blockTitle });
     if (!block) {
-        throw new Error(`Block with title ${blockTitle} not found`);
+      throw new Error(`Block with title ${blockTitle} not found`);
     }
 
     block.users = block.users.filter(id => id !== socketId);
@@ -52,4 +52,16 @@ export class CodeBlockService {
       throw new UnauthorizedException('Can not find Block')
     }
   }
+
+  async removeUserFromAllRooms(): Promise<void> {
+    const blocks = await this.codeBlockModel.find().exec()
+    if (!blocks) {
+      throw new Error(`No blocks found`);
+    }
+    blocks.forEach(async (block) => {
+      delete block.users;
+      await block.save();
+    });
+  }
+
 }
