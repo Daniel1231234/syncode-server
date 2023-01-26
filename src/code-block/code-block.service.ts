@@ -2,7 +2,6 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CodeBlock } from './code-block.schema';
 import * as mongoose from 'mongoose'
-import { UnauthorizedException } from "@nestjs/common";
 
 export class CodeBlockService {
   constructor(
@@ -14,11 +13,11 @@ export class CodeBlockService {
     try {
       return await this.codeBlockModel.find().exec();
     } catch (err) {
-      throw new UnauthorizedException('Can not get Blocks')
+      throw new Error('Failed to get blocks')
     }
   }
 
-  async addUserToRoom(blockTitle: string, socketId: string): Promise<any> {
+  async addUserToRoom(blockTitle: string, socketId: string): Promise<CodeBlock> {
     const block = await this.codeBlockModel.findOne({ title: blockTitle });
     if (!block) {
       throw new Error(`Block with title ${blockTitle} not found`);
@@ -31,7 +30,7 @@ export class CodeBlockService {
     return block
   }
 
-  async removeUserFromRoom(blockTitle: string, socketId: string): Promise<any> {
+  async removeUserFromRoom(blockTitle: string, socketId: string): Promise<CodeBlock> {
     const block = await this.codeBlockModel.findOne({ title: blockTitle });
     if (!block) {
       throw new Error(`Block with title ${blockTitle} not found`);
@@ -49,19 +48,8 @@ export class CodeBlockService {
       const codeBlock = await this.codeBlockModel.findOne({ _id: id }).exec();
       return codeBlock
     } catch (err) {
-      throw new UnauthorizedException('Can not find Block')
+      throw new Error('Can not find Block')
     }
-  }
-
-  async removeUserFromAllRooms(): Promise<void> {
-    const blocks = await this.codeBlockModel.find().exec()
-    if (!blocks) {
-      throw new Error(`No blocks found`);
-    }
-    blocks.forEach(async (block) => {
-      delete block.users;
-      await block.save();
-    });
   }
 
 }

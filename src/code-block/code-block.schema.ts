@@ -23,8 +23,6 @@ export class CodeBlock {
 
   @Prop()
   users?: string[];
-
-
 }
 
 export const CodeBlockSchema = SchemaFactory.createForClass(CodeBlock);

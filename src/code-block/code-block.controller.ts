@@ -8,15 +8,12 @@ export class CodeBlockController {
 
   @Get('/')
   async getBlocks(): Promise<CodeBlock[]> {
-    const blocks = await this.codeBlockService.getAllBlocks();
-    return blocks
+    return await this.codeBlockService.getAllBlocks();
   }
 
   @Get('/:blockId')
   async findOneBlock(@Param('blockId') blockId: string): Promise<CodeBlock> {
-    const res = await this.codeBlockService.findOne(blockId)
-    return res
+    return await this.codeBlockService.findOne(blockId)
   }
-
 
 }

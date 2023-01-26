@@ -36,9 +36,7 @@ export class CodeBlockGateway implements OnGatewayConnection, OnGatewayDisconnec
     @SubscribeMessage('join_room')
     async handleRoomJoin(client: Socket, blockTitle: string) {
         try {
-            // Add user to the room with the corresponding block title
             const room = await this.codeBlockService.addUserToRoom(blockTitle, client.id)
-            // Join the client to the room
             client.join(room.title)
             // Emit event to the joined user with the list of users in the room
             client.emit('joined_users', room.users)
@@ -66,15 +64,13 @@ export class CodeBlockGateway implements OnGatewayConnection, OnGatewayDisconnec
 
 
     @SubscribeMessage('leave_room')
-    async handleLeaveRoom(client: Socket, blockTitle: any) {
+    async handleLeaveRoom(client: Socket, blockTitle: string) {
         try {
-            //remove user from the room
             const room = await this.codeBlockService.removeUserFromRoom(blockTitle, client.id)
            //emit the event 'joined_users' to the current user with the updated list of users in the room
             client.emit('joined_users', room.users)
             //emit the event 'joined_users' to all the users in the room with the updated list of users
             this.server.emit('joined_users', room.users)
-            //leave the room
             client.leave(room.title)
         } catch (err) {
             this.logger.error(`${err} in handleLeaveRoom`)
