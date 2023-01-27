@@ -15,8 +15,7 @@
 <ul>
     <li>User can choose from a selection of code blocks</li>
     <li>User can edit the code in real-time</li>
-    <li>User can save the changes made</li>
-    <li>User can download the code</li>
+    <li>Readonly & Editable mode supported</li>
 </ul>
 <h2>Tech Stack</h2>
 <ul>
