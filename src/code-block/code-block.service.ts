@@ -17,27 +17,15 @@ export class CodeBlockService {
     }
   }
 
-  async addUserToRoom(blockTitle: string, socketId: string): Promise<CodeBlock> {
+  async updateBlockWithUsers(blockTitle: string, socketId: string, action: string): Promise<CodeBlock> {
     const block = await this.codeBlockModel.findOne({ title: blockTitle });
-    if (!block) {
-      throw new Error(`Block with title ${blockTitle} not found`);
-    }
-    if (block.users.indexOf(socketId) !== -1) {
-      throw new Error(`user ${blockTitle} is allready in room`);
-    }
-    block.users.push(socketId);
-    await block.save();
-    return block
-  }
+    if (!block) throw new Error(`Block with title ${blockTitle} not found`);
+    if (action === 'add') {
+      if (block.users.indexOf(socketId) !== -1) throw new Error(`user ${blockTitle} is already in room`);
+      block.users.push(socketId)
+    } else block.users = block.users.filter(id => id !== socketId);
 
-  async removeUserFromRoom(blockTitle: string, socketId: string): Promise<CodeBlock> {
-    const block = await this.codeBlockModel.findOne({ title: blockTitle });
-    if (!block) {
-      throw new Error(`Block with title ${blockTitle} not found`);
-    }
-
-    block.users = block.users.filter(id => id !== socketId);
-    await block.save();
+    await block.save()
     return block
   }
 
@@ -51,5 +39,6 @@ export class CodeBlockService {
       throw new Error('Can not find Block')
     }
   }
+
 
 }
