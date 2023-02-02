@@ -4,7 +4,7 @@
 <p>To run the app, you will need to have Node.js and npm installed on your machine.</p>
 <ol>
     <li>Clone the repository: <code>git clone https://github.com/Daniel1231234/syncode-server.git</code></li>
-    <li>Go to the project directory: <code>cd real-time-code-editor</code></li>
+    <li>Go to the project directory: <code>cd syncode-server</code></li>
     <li>Install dependencies: <code>npm install</code></li>
     <li>Start the app: <code>npm run dev</code></li>
 </ol>
@@ -15,8 +15,7 @@
 <ul>
     <li>User can choose from a selection of code blocks</li>
     <li>User can edit the code in real-time</li>
-    <li>User can save the changes made</li>
-    <li>User can download the code</li>
+    <li>Readonly & Editable mode supported</li>
 </ul>
 <h2>Tech Stack</h2>
 <ul>
