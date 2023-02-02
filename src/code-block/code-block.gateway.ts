@@ -9,7 +9,10 @@ import {
     WebSocketServer,
 } from '@nestjs/websockets';
 
-@WebSocketGateway({ namespace: '/' })
+@WebSocketGateway(
+    {
+        cors: { origin: "*" }
+    })
 
 @Injectable()
 export class CodeBlockGateway

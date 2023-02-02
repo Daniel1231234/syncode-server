@@ -1,5 +1,6 @@
 <h1>Real-Time Code Editor</h1>
 <p>This application is a real-time code editor built with React, TypeScript, and Nest.js. It allows users to choose from a selection of code blocks, and then redirects them to a code block page where they can edit the code in real-time.</p>
+<p>DEMO: https://syncode-server-production.up.railway.app/</p>
 <h2>Getting Started</h2>
 <p>To run the app, you will need to have Node.js and npm installed on your machine.</p>
 <ol>
